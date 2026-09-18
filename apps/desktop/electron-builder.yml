@@ -1,0 +1,24 @@
+appId: com.circle.desktop
+productName: Circle
+icon: resources/icon.png
+directories:
+  output: release
+  buildResources: resources
+files:
+  - dist/**
+  - resources/icon.png
+  - package.json
+win:
+  icon: resources/icon.ico
+  target:
+    - nsis
+  artifactName: Circle-Setup-${version}-${arch}.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+linux:
+  target:
+    - AppImage
+  category: Utility
+  artifactName: Circle-${version}-${arch}.${ext}

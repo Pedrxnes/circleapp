@@ -1,0 +1,220 @@
+:root {
+  --panel-bg: rgba(20, 22, 27, 0.94);
+  --panel-border: rgba(255, 255, 255, 0.09);
+  --text: #e9ecf1;
+  --text-dim: #9aa1ad;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: var(--text);
+  /* The whole page is click-through except the orb and the open panel; the
+     main process flips the window's mouse handling based on hit-testing. */
+  user-select: none;
+  cursor: default;
+}
+
+.orb-root {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* -------------------------------------------------------------------- orb */
+
+.orb {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.07), transparent 60%),
+    rgba(18, 20, 25, 0.9);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 18px -6px var(--orb-color);
+  transition: opacity 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+  cursor: grab;
+}
+
+.orb-open { transform: translate(-50%, -50%) scale(1.06); }
+.orb-dragging { cursor: grabbing; transition: none; }
+
+.ring { position: absolute; inset: 0; }
+.ring-arc { transition: stroke-dasharray 420ms ease, stroke 260ms ease; }
+
+.orb-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.orb-percent {
+  font-size: clamp(13px, 2.4vh, 17px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.orb-percent i {
+  font-style: normal;
+  font-size: 0.62em;
+  opacity: 0.6;
+  margin-left: 1px;
+}
+
+.orb-alert {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--orb-color);
+}
+
+/* ------------------------------------------------------------------ panel */
+
+.panel {
+  position: absolute;
+  padding: 12px 14px 10px;
+  border-radius: 14px;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.panel-right { transform: translateX(8px); }
+.panel-left { transform: translateX(-8px); }
+
+.panel-open {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.panel-source {
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.panel-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.panel-row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.panel-row-label { font-size: 13px; font-weight: 500; }
+
+.panel-row-value {
+  font-size: 14px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.panel-bar {
+  margin: 6px 0 4px;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.panel-bar span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width 420ms ease, background 260ms ease;
+}
+
+.panel-row-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.panel-message {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.panel-message strong { font-size: 13px; }
+.panel-message span { color: var(--text-dim); }
+
+.panel-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 9px;
+  border-top: 1px solid var(--panel-border);
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.panel-foot button {
+  appearance: none;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  border-radius: 7px;
+  padding: 3px 9px;
+  font: inherit;
+  font-size: 10.5px;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.panel-foot button:hover { background: rgba(255, 255, 255, 0.11); }
+
+@media (prefers-reduced-motion: reduce) {
+  .orb,
+  .panel,
+  .panel-bar span,
+  .ring-arc { transition: none; }
+}
