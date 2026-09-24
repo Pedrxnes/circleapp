@@ -14,13 +14,14 @@ import {
   ringPercent,
   secondaryMetric
 } from "../shared/types";
-import type { AppInfo, HistorySummary, HistoryView, Language, Settings, SourceInfo, Usage } from "../shared/types";
+import type { AppInfo, HistorySummary, HistoryView, Language, SessionModels, Settings, SourceInfo, Usage } from "../shared/types";
 import appIcon from "../../resources/icon.png";
 import { Ring } from "./Ring";
 import { Row, Section, Segmented, Slider, Toggle } from "./controls";
 import { formatExhaustion, formatPeriodLabel, formatReset, formatUpdated, metricHint, metricLabel } from "./format";
 import { Sparkline } from "./Sparkline";
 import { WeeklyPace } from "./WeeklyPace";
+import { ModelBreakdown } from "./ModelBreakdown";
 import "./settings.css";
 
 const EMPTY_USAGE: Usage = { state: "no-credentials", windows: [], accountEmail: null, updatedAt: null, error: null, sourceLabel: null };
@@ -30,6 +31,7 @@ type Tab = (typeof TABS)[number];
 function App(): JSX.Element {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [usage, setUsage] = useState<Usage>(EMPTY_USAGE);
+  const [models, setModels] = useState<SessionModels | null>(null);
   const [history, setHistory] = useState<HistorySummary>({
     samples: [],
     peakSession: 0,
@@ -67,10 +69,12 @@ function App(): JSX.Element {
     void window.circle.getState().then((state) => {
       setSettings(state.settings);
       setUsage(state.usage);
+      setModels(state.models);
     });
     void window.circle.getAppInfo().then(setInfo);
     void window.circle.getLoginItem().then(setLoginItem);
     window.circle.onSettings(setSettings);
+    window.circle.onModels(setModels);
     window.circle.onUsage((next) => { setUsage(next); reload(); });
     reload();
   }, [reload]);
@@ -150,6 +154,12 @@ function App(): JSX.Element {
               )}
               <p className="muted">{formatUpdated(usage.updatedAt, settings.language)}</p>
             </Section>
+
+            {usage.state !== "no-credentials" && (
+              <Section title={text.modelsTitle} hint={text.modelsHint}>
+                <ModelBreakdown models={models} language={settings.language} />
+              </Section>
+            )}
 
             {usage.state === "ok" && (
               <Section title={text.weeklyPaceTitle} hint={text.weeklyPaceHint}>

@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron";
 import type { CircleApi } from "../shared/api";
-import type { OrbLayout, Settings, Usage } from "../shared/types";
+import type { OrbLayout, SessionModels, Settings, Usage } from "../shared/types";
 
 const api: CircleApi = {
   getState: () => ipcRenderer.invoke("circle:get-state"),
@@ -19,6 +19,7 @@ const api: CircleApi = {
   openDataFolder: () => ipcRenderer.invoke("circle:open-data-folder"),
   quit: () => ipcRenderer.invoke("circle:quit"),
   onUsage: (callback) => { ipcRenderer.on("circle:usage", (_event, value: Usage) => callback(value)); },
+  onModels: (callback) => { ipcRenderer.on("circle:models", (_event, value: SessionModels | null) => callback(value)); },
   onSettings: (callback) => { ipcRenderer.on("circle:settings", (_event, value: Settings) => callback(value)); },
   onLayout: (callback) => { ipcRenderer.on("circle:layout", (_event, value: OrbLayout) => callback(value)); }
 };

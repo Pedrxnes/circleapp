@@ -127,3 +127,17 @@ export function formatAxisTick(at: number, language: Language, spanMs: number): 
   if (spanMs < AXIS_DATE_THRESHOLD_MS) return time;
   return `${date.toLocaleDateString(locale, { day: "numeric", month: "short" })} · ${time}`;
 }
+
+/** "1.2M" / "1,2 mi" — a token count short enough for a legend. */
+export function formatTokens(value: number, language: Language): string {
+  return value.toLocaleString(localeFor(language), { notation: "compact", maximumFractionDigits: 1 });
+}
+
+/** "14:02–15:30" — when a conversation was active. */
+export function formatTimeSpan(fromIso: string, toIso: string, language: Language): string {
+  const locale = localeFor(language);
+  const clock = (iso: string): string => new Date(iso).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const from = clock(fromIso);
+  const to = clock(toIso);
+  return from === to ? from : `${from}–${to}`;
+}

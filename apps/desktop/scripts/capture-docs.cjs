@@ -43,12 +43,29 @@ const samples = Array.from({ length: 96 }, (_unused, index) => {
   return { at: at.toISOString(), session: Math.max(2, wave + (index % 5) * 3), week: Math.min(80, 6 + index * 0.32) };
 });
 
+// Two conversations over three models for the per-model breakdown, summarised by the real module.
+function sessionModels() {
+  const { summarizeModels } = require("../dist/main/transcripts.js");
+  const now = Date.now();
+  const entry = (key, minutesAgo, model, sessionId, cwd, tokens) => ({
+    key, at: now - minutesAgo * 60_000, model, sessionId, cwd,
+    input: Math.round(tokens * 0.02), output: Math.round(tokens * 0.08),
+    cacheWrite: Math.round(tokens * 0.2), cacheRead: Math.round(tokens * 0.7)
+  });
+  return summarizeModels([
+    entry("a1", 170, "claude-opus-4-1-20250805", "s1", "C:\\Users\\you\\circle", 820_000),
+    entry("a2", 90, "claude-haiku-4-5-20251001", "s1", "C:\\Users\\you\\circle", 60_000),
+    entry("b1", 40, "claude-sonnet-4-5-20250929", "s2", "/home/you/api", 410_000),
+    entry("b2", 5, "claude-opus-4-1-20250805", "s2", "/home/you/api", 150_000)
+  ], now - 3 * 3_600_000, now);
+}
+
 const SETTINGS_WIDTH = 880;
 const SETTINGS_HEIGHT = 700;
 const ORB_DIAMETER = 72;
-const layout = { boxWidth: 400, boxHeight: 300, orbDiameter: ORB_DIAMETER, centerX: 350, centerY: 168, anchor: "right" };
+const layout = { boxWidth: 400, boxHeight: 380, orbDiameter: ORB_DIAMETER, centerX: 350, centerY: 208, anchor: "right" };
 
-ipcMain.handle("circle:get-state", () => ({ settings, usage, layout }));
+ipcMain.handle("circle:get-state", () => ({ settings, usage, models: sessionModels(), layout }));
 ipcMain.handle("circle:get-app-info", () => ({
   version: require("../package.json").version, platform: "win32", packaged: true,
   dataPath: "C:\\Users\\you\\AppData\\Roaming\\Circle", electron: process.versions.electron

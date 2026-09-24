@@ -11,12 +11,13 @@ import {
   ringPercent,
   secondaryMetric
 } from "../shared/types";
-import type { AppInfo, LoginItemStatus, MetricKey, OrbLayout, Settings, Usage } from "../shared/types";
+import type { AppInfo, LoginItemStatus, MetricKey, OrbLayout, SessionModels, Settings, Usage } from "../shared/types";
 import { ClaudeService } from "./claude";
 import { computeLayout } from "./layout";
 import { HistoryStore } from "./history";
 import { SettingsStore } from "./settings";
 import { ThresholdAlerts } from "./alerts";
+import { sessionWindowStart, summarizeModels } from "./transcripts";
 
 const APP_ID = "com.circle.desktop";
 
@@ -30,6 +31,7 @@ let dragOffset: { x: number; y: number } | undefined;
 let dragCenter: { x: number; y: number } | undefined;
 let isQuitting = false;
 let usage: Usage = { state: "no-credentials", windows: [], accountEmail: null, updatedAt: null, error: null, sourceLabel: null };
+let models: SessionModels | null = null;
 
 let settingsStore: SettingsStore;
 let historyStore: HistoryStore;
@@ -100,6 +102,7 @@ function createOrbWindow(): BrowserWindow {
     window.webContents.send("circle:layout", currentLayout().layout);
     window.webContents.send("circle:settings", settings());
     window.webContents.send("circle:usage", usage);
+    window.webContents.send("circle:models", models);
   });
   window.on("closed", () => { orbWindow = undefined; });
   return window;
@@ -289,10 +292,13 @@ function notify(): void {
 function broadcast(): void {
   orbWindow?.webContents.send("circle:usage", usage);
   settingsWindow?.webContents.send("circle:usage", usage);
+  orbWindow?.webContents.send("circle:models", models);
+  settingsWindow?.webContents.send("circle:models", models);
 }
 
 async function refresh(): Promise<Usage> {
   usage = await claude.fetch();
+  models = await claude.sessionModels(sessionWindowStart(usage));
   historyStore.record(usage);
   notify();
   updateTray();
@@ -394,7 +400,7 @@ function requireTrusted(event: Electron.IpcMainInvokeEvent): void {
 function registerIpc(): void {
   ipcMain.handle("circle:get-state", (event) => {
     requireTrusted(event);
-    return { settings: settings(), usage, layout: currentLayout().layout };
+    return { settings: settings(), usage, models, layout: currentLayout().layout };
   });
   ipcMain.handle("circle:refresh", (event) => { requireTrusted(event); return refresh(); });
   ipcMain.handle("circle:update-settings", (event, patch: unknown) => {
@@ -466,9 +472,27 @@ function smokeUsage(): Usage {
   };
 }
 
+/** Two conversations over three models, so the breakdown in both windows has something to draw. */
+function smokeModels(): SessionModels {
+  const now = Date.now();
+  const from = now - 3 * 3_600_000;
+  const at = (minutesAgo: number): number => now - minutesAgo * 60_000;
+  const entry = (key: string, minutesAgo: number, model: string, sessionId: string, cwd: string, tokens: number) => ({
+    key, at: at(minutesAgo), model, sessionId, cwd,
+    input: Math.round(tokens * 0.02), output: Math.round(tokens * 0.08), cacheWrite: Math.round(tokens * 0.2), cacheRead: Math.round(tokens * 0.7)
+  });
+  return summarizeModels([
+    entry("a1", 170, "claude-opus-4-1-20250805", "s1", "C:\\Users\\demo\\circle", 820_000),
+    entry("a2", 90, "claude-haiku-4-5-20251001", "s1", "C:\\Users\\demo\\circle", 60_000),
+    entry("b1", 40, "claude-sonnet-4-5-20250929", "s2", "/home/demo/api", 410_000),
+    entry("b2", 5, "claude-opus-4-1-20250805", "s2", "/home/demo/api", 150_000)
+  ], from, now);
+}
+
 async function runSmoke(): Promise<void> {
   const directory = process.env.CIRCLE_SMOKE_DIR ?? app.getPath("temp");
   usage = smokeUsage();
+  models = smokeModels();
   updateTray();
   broadcast();
   showSettings();

@@ -10,6 +10,8 @@ export interface WslShell {
   distros(): Promise<string[]>;
   hasClaude(distro: string): Promise<boolean>;
   readFile(distro: string, homeRelativePath: string): Promise<string>;
+  /** The distro user's `$HOME`, or null when it cannot be resolved. */
+  homeDir(distro: string): Promise<string | null>;
 }
 
 const PROBE_SCRIPT = 'if [ -e "$HOME/.claude/.credentials.json" ]; then echo claude; fi\ntrue\n';
@@ -47,7 +49,17 @@ export function makeWslShell(options: { platform?: NodeJS.Platform; exec?: WslEx
     return decodeWslOutput(await exec("wsl.exe", ["-d", distro, "sh"], { input: `cat "$HOME/${homeRelativePath}"\n` }));
   }
 
-  return { distros, hasClaude, readFile };
+  async function homeDir(distro: string): Promise<string | null> {
+    if (platform !== "win32") return null;
+    try {
+      const home = decodeWslOutput(await exec("wsl.exe", ["-d", distro, "sh"], { input: 'printf "%s" "$HOME"\n' })).trim();
+      return home.startsWith("/") ? home : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return { distros, hasClaude, readFile, homeDir };
 }
 
 /**

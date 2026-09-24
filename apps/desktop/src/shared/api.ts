@@ -1,8 +1,10 @@
-import type { AppInfo, HistorySummary, HistoryView, LoginItemStatus, OrbLayout, Settings, SourceInfo, Usage } from "./types";
+import type { AppInfo, HistorySummary, HistoryView, LoginItemStatus, OrbLayout, SessionModels, Settings, SourceInfo, Usage } from "./types";
 
 export interface CircleState {
   settings: Settings;
   usage: Usage;
+  /** Tokens per model in the current session window, or null when no transcripts could be read. */
+  models: SessionModels | null;
   layout: OrbLayout;
 }
 
@@ -24,6 +26,7 @@ export interface CircleApi {
   openDataFolder(): Promise<string>;
   quit(): Promise<void>;
   onUsage(callback: (usage: Usage) => void): void;
+  onModels(callback: (models: SessionModels | null) => void): void;
   onSettings(callback: (settings: Settings) => void): void;
   onLayout(callback: (layout: OrbLayout) => void): void;
 }

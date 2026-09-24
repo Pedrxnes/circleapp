@@ -74,6 +74,11 @@ projects where the week lands when it resets, and shows how much you can use per
 day until then — next to today's usage, your daily average, a per-day breakdown
 of the last week and how many sessions ran close to their limit.
 
+**Which models ate the session.** Circle reads Claude Code's local transcripts
+and splits the current 5-hour session by model — each one's share of the tokens,
+in the hover card and in Settings — and shows every conversation in the window
+with its own per-model split.
+
 **WSL aware.** Claude Code on Windows often lives inside WSL. Circle finds the
 credentials in either place, and lets you pin which one to read.
 
@@ -124,9 +129,9 @@ Click the orb to open Settings.
 
 ### Usage
 
-<img src="docs/settings-usage.png" alt="The Usage tab: session and weekly gauges, the weekly pace forecast, a seven-day trend chart, and the credential source picker" width="760" />
+<img src="docs/settings-usage.png" alt="The Usage tab: session and weekly gauges, the per-model token breakdown, the weekly pace forecast, a seven-day trend chart, and the credential source picker" width="760" />
 
-Per-window gauges, the weekly pace, the seven-day trend, the account your token
+Per-window gauges, the models used this session, the weekly pace, the seven-day trend, the account your token
 belongs to, and which credential source to read — automatic, Windows, or a
 specific WSL distro.
 
@@ -139,6 +144,16 @@ burn rate, the credit available per day to spread what is left evenly, today's
 usage and the daily average against the even daily share (~14%), a bar per day
 for the last seven days with that share drawn as a dashed line, and the number
 of sessions in the last week, including those that peaked at 90% or more.
+
+**Models this session** splits the tokens Claude Code logged since the current
+5-hour window opened by model: a bar per model with its share and token count
+(hover a row for input, output, cache write, cache read and the number of
+responses), then each conversation active in the window — its project folder,
+when it ran, its share of the session's tokens and its own split by model. Every
+token counts, cache reads included. Anthropic weighs models differently against
+the limit, so a model's share of tokens is not its share of the session
+percentage, and Claude Code running on another device is not in the transcripts
+on this one.
 
 The trend chart is readable point by point: percentages run down its side,
 timestamps run underneath, and hovering (or focusing it and using the arrow
@@ -182,6 +197,13 @@ reads again whenever the machine wakes from sleep.
 **WSL.** Circle lists your distributions with `wsl.exe --list --quiet` and checks
 each for the credential file. If both a Windows and a WSL install are found,
 Settings → Usage lets you pin which one to read.
+
+**Models.** Claude Code logs every response, with its model and token usage, to
+a JSONL transcript per conversation under `~/.claude/projects/` (or the WSL
+distro's, read through `\\wsl$`). On each refresh Circle reads the transcripts
+touched since the session window opened — only the lines appended since the last
+read — counts each response once, and sums the tokens per model and per
+conversation. Nothing from the transcripts leaves your computer.
 
 **Circle never writes to the credential file** and never refreshes the token
 itself — Claude Code owns it. If the stored token has expired, Circle says so and
@@ -248,6 +270,7 @@ apps/desktop/
   src/main/        Electron main process
     index.ts       windows, tray, IPC, refresh loop, dragging
     claude.ts      credential reading and the Anthropic usage call
+    transcripts.ts per-model token totals from Claude Code's transcripts
     layout.ts      orb placement (pure, unit-tested)
     settings.ts    validated, atomically written settings
     history.ts     the rolling local usage log
@@ -265,7 +288,7 @@ A couple of details worth knowing if you plan to hack on it:
 
 - **The orb window is transparent and click-through.** The renderer hit-tests the
   pointer against the orb and the open panel, then asks the main process to flip
-  `setIgnoreMouseEvents`. That is what lets a 400×300 window feel like a 72-pixel
+  `setIgnoreMouseEvents`. That is what lets a 400×380 window feel like a 72-pixel
   circle.
 - **Dragging is driven from the main process**, which polls the OS cursor — a
   frameless window stops receiving pointer events once the cursor leaves it.
@@ -277,8 +300,9 @@ A couple of details worth knowing if you plan to hack on it:
 
 Circle talks to exactly one host, `api.anthropic.com`, using the token Claude
 Code already stored. There is no telemetry, no account of its own, and no server
-in between. Your usage history stays in your own user data folder, and the
-credential file is only ever read, never written.
+in between. Your usage history stays in your own user data folder, the
+credential file is only ever read, never written, and the per-model breakdown is
+computed from Claude Code's local transcripts without sending them anywhere.
 
 ## Contributing
 

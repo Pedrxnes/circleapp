@@ -1,8 +1,9 @@
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { PRESENCE_CACHE_TTL_MS, clampPercent } from "../shared/types";
-import type { MetricKey, SourceChoice, SourceInfo, Usage, UsageWindow, WslPresence } from "../shared/types";
-import { circlePaths, WSL_CREDENTIALS_PATH, type CirclePaths } from "./paths";
+import type { MetricKey, SessionModels, SourceChoice, SourceInfo, Usage, UsageWindow, WslPresence } from "../shared/types";
+import { circlePaths, WSL_CREDENTIALS_PATH, WSL_PROJECTS_PATH, wslSharePath, type CirclePaths } from "./paths";
+import { TranscriptReader, summarizeModels } from "./transcripts";
 import { makeWslShell, type WslShell } from "./wsl";
 
 const USAGE_URL = "https://api.anthropic.com/api/oauth/usage";
@@ -31,6 +32,10 @@ export class ClaudeService {
   private readonly paths: CirclePaths;
   private presenceCache: { at: number; entries: WslPresence[] } | null = null;
   private accountEmail: string | null = null;
+  /** The source the last `fetch` read, so transcripts come from the same Claude Code install. */
+  private activeSource: SourceChoice | null = null;
+  private readonly wslHomes = new Map<string, string>();
+  private readonly transcripts = new TranscriptReader();
 
   constructor(
     private readonly loadSource: () => SourceChoice | null,
@@ -54,6 +59,7 @@ export class ClaudeService {
 
   async fetch(): Promise<Usage> {
     const info = await this.sources();
+    this.activeSource = info.active;
     if (!info.active) return noCredentials();
     try {
       const credentials = info.active.location === "wsl"
@@ -85,6 +91,31 @@ export class ClaudeService {
     }
   }
 
+  /**
+   * Tokens per model since `from`, read from the transcripts of the Claude Code
+   * install the last `fetch` used. Null when that install has no transcripts.
+   */
+  async sessionModels(from: number, now = Date.now()): Promise<SessionModels | null> {
+    try {
+      const root = await this.projectsDir(this.activeSource);
+      if (!root) return null;
+      const entries = await this.transcripts.read(root, from);
+      return entries ? summarizeModels(entries, from, now) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private async projectsDir(source: SourceChoice | null): Promise<string | null> {
+    if (!source) return null;
+    if (source.location === "host") return this.paths.claudeProjects;
+    const distro = source.distro ?? "";
+    // Only a resolved home is cached, so a distro that was still starting up is asked again next time.
+    const home = this.wslHomes.get(distro) ?? await this.wsl.homeDir(distro);
+    if (home) this.wslHomes.set(distro, home);
+    return home ? wslSharePath(distro, `${home}/${WSL_PROJECTS_PATH}`) : null;
+  }
+
   private async wslPresence(): Promise<WslPresence[]> {
     if (this.presenceCache && Date.now() - this.presenceCache.at < PRESENCE_CACHE_TTL_MS) return this.presenceCache.entries;
     const distros = await this.wsl.distros();
@@ -98,6 +129,7 @@ export class ClaudeService {
   forgetAccount(): void {
     this.accountEmail = null;
     this.presenceCache = null;
+    this.wslHomes.clear();
   }
 }
 

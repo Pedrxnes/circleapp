@@ -23,6 +23,48 @@ export interface Usage {
   sourceLabel: string | null;
 }
 
+/** Tokens one or more Claude Code responses consumed, as the API reported them. */
+export interface TokenCounts {
+  input: number;
+  output: number;
+  cacheWrite: number;
+  cacheRead: number;
+  /** Sum of the four counts above. */
+  total: number;
+}
+
+export interface ModelUsage extends TokenCounts {
+  /** Model id exactly as Claude Code logged it, e.g. `claude-opus-4-1-20250805`. */
+  model: string;
+  /** Percentage of the enclosing total (window or conversation) this model accounts for, 0-100. */
+  share: number;
+  /** API responses counted. */
+  messages: number;
+}
+
+/** One Claude Code conversation (transcript) active in the session window. */
+export interface ConversationUsage {
+  sessionId: string;
+  /** Folder name of the working directory the conversation ran in. */
+  project: string | null;
+  startedAt: string;
+  lastActiveAt: string;
+  total: number;
+  /** Percentage of the window's tokens this conversation accounts for, 0-100. */
+  share: number;
+  models: ModelUsage[];
+}
+
+/** Per-model breakdown of the current 5-hour session window, read from Claude Code's local transcripts. */
+export interface SessionModels {
+  windowStart: string;
+  windowEnd: string;
+  total: number;
+  models: ModelUsage[];
+  /** Most recently active first. */
+  conversations: ConversationUsage[];
+}
+
 export type RingMetric = "session" | "week" | "highest";
 export type ColorMode = "dynamic" | "fixed";
 export type OrbSize = "small" | "medium" | "large";
@@ -173,11 +215,15 @@ export const ORB_BOX_PADDING = 14;
 export const PANEL_WIDTH = 268;
 export const PANEL_GAP = 12;
 export const ORB_BOX_WIDTH = PANEL_WIDTH + PANEL_GAP + ORB_MAX_DIAMETER + ORB_BOX_PADDING * 2;
-export const ORB_BOX_HEIGHT = 300;
+export const ORB_BOX_HEIGHT = 380;
 
 export const MIN_REFRESH_INTERVAL_SECONDS = 60;
 export const DEFAULT_REFRESH_INTERVAL_SECONDS = 300;
 export const PRESENCE_CACHE_TTL_MS = 30_000;
+/** Length of Anthropic's rolling session window. */
+export const SESSION_WINDOW_HOURS = 5;
+/** Conversations listed per session window; older ones still count toward the model totals. */
+export const MAX_CONVERSATIONS = 12;
 export const HISTORY_RETENTION_DAYS = 90;
 /** ~90 days at the default 5-minute refresh interval; a faster interval trims older days first. */
 export const HISTORY_MAX_SAMPLES = 26_000;

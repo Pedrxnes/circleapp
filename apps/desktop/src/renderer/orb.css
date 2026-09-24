@@ -218,3 +218,73 @@ body {
   .panel-bar span,
   .ring-arc { transition: none; }
 }
+
+/* ----------------------------------------------------------------- models */
+
+.panel-models {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--panel-border);
+}
+
+.panel-models-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.panel-models-total,
+.panel-models-empty {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.model-stack {
+  display: flex;
+  gap: 2px;
+  height: 5px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.model-stack span { display: block; height: 100%; min-width: 2px; }
+
+.panel-models-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+  font-size: 11.5px;
+}
+
+.panel-models-list li {
+  display: grid;
+  grid-template-columns: 8px 1fr auto;
+  align-items: center;
+  gap: 7px;
+}
+
+.panel-models-list i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.panel-models-other { background: var(--text-dim); }
+
+.panel-models-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-models-list b {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}

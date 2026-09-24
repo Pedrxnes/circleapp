@@ -11,13 +11,14 @@ import {
   secondaryMetric,
   findWindow
 } from "../shared/types";
-import type { OrbLayout, Settings, Usage } from "../shared/types";
+import type { OrbLayout, SessionModels, Settings, Usage } from "../shared/types";
 import { Ring } from "./Ring";
 import { formatReset, formatUpdated, metricHint, metricLabel } from "./format";
+import { PanelModels } from "./ModelBreakdown";
 import "./orb.css";
 
 const EMPTY_USAGE: Usage = { state: "no-credentials", windows: [], accountEmail: null, updatedAt: null, error: null, sourceLabel: null };
-const DEFAULT_LAYOUT: OrbLayout = { boxWidth: 400, boxHeight: 300, orbDiameter: 72, centerX: 320, centerY: 150, anchor: "right" };
+const DEFAULT_LAYOUT: OrbLayout = { boxWidth: 400, boxHeight: 380, orbDiameter: 72, centerX: 320, centerY: 150, anchor: "right" };
 /** Pointer slack around the orb so a shaky hand does not close the panel. */
 const HIT_SLACK = 6;
 const PANEL_CLOSE_DELAY_MS = 180;
@@ -26,6 +27,7 @@ const DRAG_THRESHOLD_PX = 4;
 function App(): JSX.Element {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [usage, setUsage] = useState<Usage>(EMPTY_USAGE);
+  const [models, setModels] = useState<SessionModels | null>(null);
   const [layout, setLayout] = useState<OrbLayout>(DEFAULT_LAYOUT);
   const [open, setOpen] = useState(false);
   const [dragging, setDragging] = useState(false);
@@ -45,9 +47,11 @@ function App(): JSX.Element {
     void window.circle.getState().then((state) => {
       setSettings(state.settings);
       setUsage(state.usage);
+      setModels(state.models);
       setLayout(state.layout);
     });
     window.circle.onSettings(setSettings);
+    window.circle.onModels(setModels);
     window.circle.onUsage(setUsage);
     window.circle.onLayout(setLayout);
   }, []);
@@ -246,6 +250,8 @@ function App(): JSX.Element {
             })}
           </ul>
         )}
+
+        {usage.state === "ok" && models && <PanelModels models={models} language={settings.language} />}
 
         {usage.state === "no-credentials" && (
           <div className="panel-message">
