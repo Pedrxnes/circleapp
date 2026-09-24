@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import test from "node:test";
 import { circlePaths, wslProjectRoots } from "../main/paths";
 
@@ -15,12 +16,12 @@ test("CLAUDE_CONFIG_DIR overrides the default directory", () => {
 
 test("transcripts are looked for in both of Claude Code's config directories", () => {
   const paths = circlePaths({ platform: "linux", home: "/home/ana", env: {} });
-  assert.deepEqual(paths.claudeProjects, ["/home/ana/.claude/projects", "/home/ana/.config/claude/projects"]);
+  assert.deepEqual(paths.claudeProjects, [join("/home/ana", ".claude", "projects"), join("/home/ana", ".config", "claude", "projects")]);
 });
 
 test("CLAUDE_CONFIG_DIR also moves the transcripts", () => {
   const paths = circlePaths({ platform: "linux", home: "/home/ana", env: { CLAUDE_CONFIG_DIR: "/opt/claude" } });
-  assert.deepEqual(paths.claudeProjects, ["/opt/claude/projects"]);
+  assert.deepEqual(paths.claudeProjects, [join("/opt/claude", "projects")]);
 });
 
 test("WSL transcripts are reached through the distro's UNC share", () => {
