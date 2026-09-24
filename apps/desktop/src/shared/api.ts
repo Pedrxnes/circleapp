@@ -1,4 +1,4 @@
-import type { AppInfo, HistorySummary, HistoryView, LoginItemStatus, OrbLayout, Settings, SourceInfo, Usage } from "./types";
+import type { AppInfo, HistorySummary, HistoryView, LoginItemStatus, ModelUsageSummary, OrbLayout, Settings, SourceInfo, Usage } from "./types";
 
 export interface CircleState {
   settings: Settings;
@@ -18,6 +18,7 @@ export interface CircleApi {
   openSettings(): Promise<void>;
   getSources(): Promise<SourceInfo>;
   getHistory(view?: HistoryView, offset?: number): Promise<HistorySummary>;
+  getModelUsage(): Promise<ModelUsageSummary>;
   getLoginItem(): Promise<LoginItemStatus>;
   setLoginItem(enabled: boolean): Promise<LoginItemStatus>;
   getAppInfo(): Promise<AppInfo>;

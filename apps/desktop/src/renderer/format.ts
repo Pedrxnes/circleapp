@@ -127,3 +127,16 @@ export function formatAxisTick(at: number, language: Language, spanMs: number): 
   if (spanMs < AXIS_DATE_THRESHOLD_MS) return time;
   return `${date.toLocaleDateString(locale, { day: "numeric", month: "short" })} · ${time}`;
 }
+
+/** "Today · 14:00–19:00" / "Tue, 23 Sep · 09:00–14:00" — when a session window ran. */
+export function formatSessionSpan(start: string, end: string, language: Language): string {
+  const from = Date.parse(start);
+  const to = Date.parse(end);
+  if (!Number.isFinite(from) || !Number.isFinite(to)) return "";
+  const locale = localeFor(language);
+  const clock = (at: number): string => new Date(at).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const day = new Date(from).toDateString() === new Date().toDateString()
+    ? strings(language).today
+    : new Date(from).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" });
+  return `${day} · ${clock(from)}–${clock(to)}`;
+}

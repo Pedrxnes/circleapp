@@ -39,6 +39,11 @@ export class HistoryStore {
     }
   }
 
+  /** Every stored reading taken at or after `from` (epoch ms), oldest first. */
+  samplesSince(from: number, now = new Date()): HistorySample[] {
+    return prune(this.load(), now).filter((sample) => Date.parse(sample.at) >= from);
+  }
+
   /** `offset` counts periods back from the current one (0 = this week/month, 1 = the previous, …).
    * The burn-rate projection always looks at the last 7 days regardless of the browsed period —
    * it answers "at today's pace", not "at that period's pace". */

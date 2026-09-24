@@ -44,3 +44,10 @@ test("readFile asks the distro for the credentials path", async () => {
   assert.equal(await shell.readFile("Ubuntu", ".claude/.credentials.json"), "{}");
   assert.match(seen[0] ?? "", /\.claude\/\.credentials\.json/);
 });
+
+test("home returns the distro's $HOME and null when it can't be read", async () => {
+  const shell = makeWslShell({ platform: "win32", exec: async () => Buffer.from("/home/ana\n", "utf8") });
+  assert.equal(await shell.home("Ubuntu"), "/home/ana");
+  const failing = makeWslShell({ platform: "win32", exec: async () => { throw new Error("gone"); } });
+  assert.equal(await failing.home("Ubuntu"), null);
+});

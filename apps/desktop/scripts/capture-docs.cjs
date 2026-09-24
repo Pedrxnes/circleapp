@@ -76,6 +76,23 @@ ipcMain.handle("circle:get-history", () => {
     weekly: weeklyActivity(samples, now)
   };
 });
+ipcMain.handle("circle:get-model-usage", () => {
+  // Seeded replies run through the real transcript module, so the split matches what the app computes.
+  const { summarizeModels } = require("../dist/main/transcripts.js");
+  const { apiCost } = require("../dist/shared/models.js");
+  const plan = [
+    // [hours ago, model, replies, output tokens each]
+    [1.2, "claude-opus-4-8", 34, 1400], [0.6, "claude-sonnet-5", 40, 900],
+    [9, "claude-opus-4-8", 55, 1500], [8.5, "claude-haiku-4-5", 30, 600],
+    [30, "claude-sonnet-5", 70, 1100], [52, "claude-opus-4-8", 60, 1600], [51, "claude-sonnet-5", 20, 800],
+    [75, "claude-sonnet-5", 45, 1000], [98, "claude-opus-4-8", 40, 1500]
+  ];
+  const entries = plan.flatMap(([ago, model, replies, output]) => Array.from({ length: replies }, (_unused, index) => {
+    const tokens = { input: 40, output, cacheWrite5m: 2500, cacheWrite1h: 0, cacheRead: 60000 };
+    return { at: Date.now() - ago * 3_600_000 + index * 60_000, model, key: null, ...tokens, cost: apiCost(model, tokens) };
+  })).sort((left, right) => left.at - right.at);
+  return summarizeModels(true, entries, usage, samples);
+});
 ipcMain.handle("circle:get-sources", () => ({
   host: true, wsl: [{ distro: "Ubuntu", present: true }], saved: null, active: { location: "host" }
 }));
