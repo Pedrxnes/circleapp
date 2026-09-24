@@ -86,21 +86,6 @@ export interface Strings {
   sessionsLastWeek: string;
   sessionsNearLimit: string;
 
-  modelsTitle: string;
-  modelsHint: string;
-  modelsThisWeek: string;
-  modelsSessions: string;
-  modelsCurrent: string;
-  modelsOfUsage: string;
-  modelsOfSessionLimit: string;
-  modelsOfWeekLimit: string;
-  modelsReplies: string;
-  modelsNoActivity: string;
-  modelsNoActivityWindow: string;
-  modelsNoLogs: string;
-  modelsEstimateExplain: string;
-  modelsNoPercent: string;
-
   floatingOrb: string;
   floatingOrbHint: string;
   enableOrb: string;
@@ -253,21 +238,6 @@ const en: Strings = {
   sessionsLastWeek: "Sessions in the last 7 days",
   sessionsNearLimit: "near the limit",
 
-  modelsTitle: "Models",
-  modelsHint: "Which models used your limits. Each window's usage is split by the models' share of what the same work would cost on the API.",
-  modelsThisWeek: "This week",
-  modelsSessions: "Sessions",
-  modelsCurrent: "Now",
-  modelsOfUsage: "of usage",
-  modelsOfSessionLimit: "of the session limit",
-  modelsOfWeekLimit: "of the weekly limit",
-  modelsReplies: "replies",
-  modelsNoActivity: "No Claude Code activity in the last 7 days.",
-  modelsNoActivityWindow: "No Claude Code replies logged in this window — the usage came from claude.ai or another computer.",
-  modelsNoLogs: "Claude Code's session logs weren't found for this source, so Circle can't tell which models were used.",
-  modelsEstimateExplain: "An estimate: Circle splits the usage Anthropic reports between the models Claude Code logged on this computer, weighted by API price. Usage from claude.ai or other computers isn't in those logs.",
-  modelsNoPercent: "Circle has no reading from this window, so only each model's share is known.",
-
   floatingOrb: "Floating orb",
   floatingOrbHint: "The circle that stays on top of your desktop.",
   enableOrb: "Enable the floating orb",
@@ -320,7 +290,7 @@ const en: Strings = {
   platform: "Platform",
   dataFolder: "Data folder",
   aboutBody: "Circle reads the Claude Code credentials already on this machine and asks Anthropic for your current usage. Inspired by Metria.",
-  privacyNote: "Credentials never leave your computer: they are read at runtime and only used to call Anthropic's usage endpoint. For the model breakdown Circle also reads Claude Code's local session logs, keeping only model names, timestamps and token counts — never what you wrote.",
+  privacyNote: "Credentials never leave your computer: they are read at runtime and only used to call Anthropic's usage endpoint.",
   quitCircle: "Quit Circle",
   quitHint: "Closes the orb and the tray icon.",
 
@@ -420,21 +390,6 @@ const ptBR: Strings = {
   sessionsLastWeek: "Sessões nos últimos 7 dias",
   sessionsNearLimit: "perto do limite",
 
-  modelsTitle: "Modelos",
-  modelsHint: "Quais modelos consumiram seus limites. O uso de cada janela é dividido pela fatia de cada modelo no que o mesmo trabalho custaria na API.",
-  modelsThisWeek: "Esta semana",
-  modelsSessions: "Sessões",
-  modelsCurrent: "Agora",
-  modelsOfUsage: "do uso",
-  modelsOfSessionLimit: "do limite da sessão",
-  modelsOfWeekLimit: "do limite semanal",
-  modelsReplies: "respostas",
-  modelsNoActivity: "Nenhuma atividade do Claude Code nos últimos 7 dias.",
-  modelsNoActivityWindow: "Nenhuma resposta do Claude Code registrada nesta janela — o uso veio do claude.ai ou de outro computador.",
-  modelsNoLogs: "Os registros de sessão do Claude Code não foram encontrados para esta origem, então o Circle não consegue dizer quais modelos foram usados.",
-  modelsEstimateExplain: "Uma estimativa: o Circle divide o uso informado pela Anthropic entre os modelos que o Claude Code registrou neste computador, ponderado pelo preço da API. Uso do claude.ai ou de outros computadores não aparece nesses registros.",
-  modelsNoPercent: "O Circle não tem leitura desta janela, então só a fatia de cada modelo é conhecida.",
-
   floatingOrb: "Círculo flutuante",
   floatingOrbHint: "O círculo que fica sobre a sua área de trabalho.",
   enableOrb: "Ativar o círculo flutuante",
@@ -487,7 +442,7 @@ const ptBR: Strings = {
   platform: "Plataforma",
   dataFolder: "Pasta de dados",
   aboutBody: "O Circle lê as credenciais do Claude Code já presentes neste computador e consulta o seu uso atual na Anthropic. Inspirado no Metria.",
-  privacyNote: "As credenciais nunca saem do seu computador: são lidas em tempo de execução e usadas apenas para chamar o endpoint de uso da Anthropic. Para a divisão por modelo, o Circle também lê os registros de sessão locais do Claude Code, guardando só nomes de modelos, horários e contagens de tokens — nunca o que você escreveu.",
+  privacyNote: "As credenciais nunca saem do seu computador: são lidas em tempo de execução e usadas apenas para chamar o endpoint de uso da Anthropic.",
   quitCircle: "Sair do Circle",
   quitHint: "Fecha o círculo e o ícone da bandeja.",
 

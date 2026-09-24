@@ -122,36 +122,6 @@ export interface WeeklyActivity {
   sessionsNearLimit: number;
 }
 
-export interface ModelShare {
-  /** Model id exactly as Claude Code logged it, e.g. "claude-opus-4-1-20250805". */
-  model: string;
-  /** Fraction of the window's API-equivalent cost this model accounts for, 0-1. */
-  share: number;
-  /** Estimated percentage points of the window's limit, or null when that percent is unknown. */
-  percent: number | null;
-  /** Assistant replies logged for this model in the window. */
-  replies: number;
-}
-
-export interface ModelWindow {
-  /** Bounds of the window, [start, end). */
-  start: string;
-  end: string;
-  /** Whether the window is still open. */
-  active: boolean;
-  /** Usage of the window's limit: live for open windows, the peak Circle recorded for closed ones. */
-  percent: number | null;
-  models: ModelShare[];
-}
-
-export interface ModelUsageSummary {
-  /** Whether Claude Code's local transcripts were found at all. */
-  logsFound: boolean;
-  week: ModelWindow;
-  /** Session windows from the last 7 days, newest first. */
-  sessions: ModelWindow[];
-}
-
 export interface ExhaustionWarning {
   key: "session" | "week";
   etaIso: string;
@@ -209,8 +179,6 @@ export const MIN_REFRESH_INTERVAL_SECONDS = 60;
 export const DEFAULT_REFRESH_INTERVAL_SECONDS = 300;
 export const PRESENCE_CACHE_TTL_MS = 30_000;
 export const HISTORY_RETENTION_DAYS = 90;
-/** Session windows listed in the model breakdown, newest first. */
-export const MODEL_SESSIONS_SHOWN = 12;
 /** ~90 days at the default 5-minute refresh interval; a faster interval trims older days first. */
 export const HISTORY_MAX_SAMPLES = 26_000;
 /** A session whose peak reached this counts as having run close to its cap. */

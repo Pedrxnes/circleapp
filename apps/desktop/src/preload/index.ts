@@ -13,7 +13,6 @@ const api: CircleApi = {
   openSettings: () => ipcRenderer.invoke("circle:open-settings"),
   getSources: () => ipcRenderer.invoke("circle:get-sources"),
   getHistory: (view, offset) => ipcRenderer.invoke("circle:get-history", view, offset),
-  getModelUsage: () => ipcRenderer.invoke("circle:get-model-usage"),
   getLoginItem: () => ipcRenderer.invoke("circle:get-login-item"),
   setLoginItem: (enabled) => ipcRenderer.invoke("circle:set-login-item", enabled),
   getAppInfo: () => ipcRenderer.invoke("circle:get-app-info"),

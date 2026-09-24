@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { PRESENCE_CACHE_TTL_MS, clampPercent } from "../shared/types";
 import type { MetricKey, SourceChoice, SourceInfo, Usage, UsageWindow, WslPresence } from "../shared/types";
-import { circlePaths, WSL_CREDENTIALS_PATH, wslProjectRoots, type CirclePaths } from "./paths";
+import { circlePaths, WSL_CREDENTIALS_PATH, type CirclePaths } from "./paths";
 import { makeWslShell, type WslShell } from "./wsl";
 
 const USAGE_URL = "https://api.anthropic.com/api/oauth/usage";
@@ -31,7 +31,6 @@ export class ClaudeService {
   private readonly paths: CirclePaths;
   private presenceCache: { at: number; entries: WslPresence[] } | null = null;
   private accountEmail: string | null = null;
-  private readonly wslHomes = new Map<string, string | null>();
 
   constructor(
     private readonly loadSource: () => SourceChoice | null,
@@ -86,17 +85,6 @@ export class ClaudeService {
     }
   }
 
-  /** Where the active source's Claude Code writes its session transcripts. */
-  async transcriptRoots(): Promise<string[]> {
-    const { active } = await this.sources();
-    if (!active) return [];
-    if (active.location === "host") return this.paths.claudeProjects;
-    const distro = active.distro ?? "";
-    if (!this.wslHomes.has(distro)) this.wslHomes.set(distro, await this.wsl.home(distro));
-    const home = this.wslHomes.get(distro);
-    return home ? wslProjectRoots(distro, home) : [];
-  }
-
   private async wslPresence(): Promise<WslPresence[]> {
     if (this.presenceCache && Date.now() - this.presenceCache.at < PRESENCE_CACHE_TTL_MS) return this.presenceCache.entries;
     const distros = await this.wsl.distros();
@@ -110,7 +98,6 @@ export class ClaudeService {
   forgetAccount(): void {
     this.accountEmail = null;
     this.presenceCache = null;
-    this.wslHomes.clear();
   }
 }
 
