@@ -74,6 +74,11 @@ projects where the week lands when it resets, and shows how much you can use per
 day until then — next to today's usage, your daily average, a per-day breakdown
 of the last week and how many sessions ran close to their limit.
 
+**Which model spent it.** Circle reads the model and token counts Claude Code
+logs for every reply and splits your weekly and session usage between the models
+that ran — "Opus 4.8 ≈26% of the weekly limit, Sonnet 5 ≈8%" — for the current
+week and for each session window of the last seven days.
+
 **WSL aware.** Claude Code on Windows often lives inside WSL. Circle finds the
 credentials in either place, and lets you pin which one to read.
 
@@ -187,6 +192,15 @@ Settings → Usage lets you pin which one to read.
 itself — Claude Code owns it. If the stored token has expired, Circle says so and
 asks you to sign in again rather than rotating it behind Claude Code's back.
 
+**Models.** Anthropic's endpoint only reports percentages, so the model split
+comes from Claude Code's session transcripts in `~/.claude/projects` (and
+`~/.config/claude/projects`; inside WSL, through `\\wsl.localhost`). Circle keeps
+only each reply's model, timestamp and token counts, prices them at Anthropic's
+API rates, and gives every model its share of the window's percentage. Plans
+meter usage by cost rather than raw tokens, so an Opus reply weighs more than a
+Haiku reply of the same size. It is an estimate: usage from claude.ai or another
+computer counts towards the percentage but is not in the local logs.
+
 Settings and history live in `%APPDATA%\Circle`, are written atomically, and are
 re-validated on read, so a corrupt file falls back to defaults instead of
 stopping the app from starting.
@@ -251,6 +265,7 @@ apps/desktop/
     layout.ts      orb placement (pure, unit-tested)
     settings.ts    validated, atomically written settings
     history.ts     the rolling local usage log
+    transcripts.ts Claude Code transcript reading and the per-model split
     alerts.ts      threshold crossing detection
     wsl.ts         WSL discovery and file reads
     paths.ts       credential path resolution
@@ -278,7 +293,9 @@ A couple of details worth knowing if you plan to hack on it:
 Circle talks to exactly one host, `api.anthropic.com`, using the token Claude
 Code already stored. There is no telemetry, no account of its own, and no server
 in between. Your usage history stays in your own user data folder, and the
-credential file is only ever read, never written.
+credential file is only ever read, never written. Claude Code's session logs are
+read only for model names, timestamps and token counts; what you and Claude
+wrote is never kept or sent anywhere.
 
 ## Contributing
 

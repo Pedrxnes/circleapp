@@ -17,6 +17,7 @@ import { computeLayout } from "./layout";
 import { HistoryStore } from "./history";
 import { SettingsStore } from "./settings";
 import { ThresholdAlerts } from "./alerts";
+import { TRANSCRIPT_HORIZON_MS, TranscriptStore, summarizeModels } from "./transcripts";
 
 const APP_ID = "com.circle.desktop";
 
@@ -34,6 +35,7 @@ let usage: Usage = { state: "no-credentials", windows: [], accountEmail: null, u
 let settingsStore: SettingsStore;
 let historyStore: HistoryStore;
 let claude: ClaudeService;
+let transcripts: TranscriptStore;
 const alerts = new ThresholdAlerts();
 
 function settings(): Settings {
@@ -427,6 +429,12 @@ function registerIpc(): void {
     const safeOffset = typeof offset === "number" && Number.isInteger(offset) && offset >= 0 ? offset : 0;
     return historyStore.summary(safeView, safeOffset);
   });
+  ipcMain.handle("circle:get-model-usage", async (event) => {
+    requireTrusted(event);
+    const now = Date.now();
+    const { found, entries } = await transcripts.read(now);
+    return summarizeModels(found, entries, usage, historyStore.samplesSince(now - TRANSCRIPT_HORIZON_MS), now);
+  });
   ipcMain.handle("circle:get-login-item", (event) => { requireTrusted(event); return loginItemStatus(); });
   ipcMain.handle("circle:set-login-item", (event, enabled: unknown) => {
     requireTrusted(event);
@@ -516,6 +524,7 @@ if (!hasLock) {
     settingsStore = new SettingsStore(app.getPath("userData"));
     historyStore = new HistoryStore(app.getPath("userData"));
     claude = new ClaudeService(() => settings().source);
+    transcripts = new TranscriptStore(() => claude.transcriptRoots());
 
     registerIpc();
     createTray();

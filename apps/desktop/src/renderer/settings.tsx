@@ -14,8 +14,9 @@ import {
   ringPercent,
   secondaryMetric
 } from "../shared/types";
-import type { AppInfo, HistorySummary, HistoryView, Language, Settings, SourceInfo, Usage } from "../shared/types";
+import type { AppInfo, HistorySummary, HistoryView, Language, ModelUsageSummary, Settings, SourceInfo, Usage } from "../shared/types";
 import appIcon from "../../resources/icon.png";
+import { ModelUsage } from "./ModelUsage";
 import { Ring } from "./Ring";
 import { Row, Section, Segmented, Slider, Toggle } from "./controls";
 import { formatExhaustion, formatPeriodLabel, formatReset, formatUpdated, metricHint, metricLabel } from "./format";
@@ -46,6 +47,7 @@ function App(): JSX.Element {
   });
   const [historyView, setHistoryView] = useState<HistoryView>("week");
   const [historyOffset, setHistoryOffset] = useState(0);
+  const [models, setModels] = useState<ModelUsageSummary | null>(null);
   const [sources, setSources] = useState<SourceInfo | null>(null);
   const [info, setInfo] = useState<AppInfo | null>(null);
   const [loginItem, setLoginItem] = useState({ available: false, enabled: false });
@@ -56,6 +58,7 @@ function App(): JSX.Element {
   const reload = useCallback(() => {
     void window.circle.getHistory(historyView, historyOffset).then(setHistory);
     void window.circle.getSources().then(setSources);
+    void window.circle.getModelUsage().then(setModels);
   }, [historyView, historyOffset]);
 
   const changeHistoryView = useCallback((view: HistoryView) => {
@@ -154,6 +157,12 @@ function App(): JSX.Element {
             {usage.state === "ok" && (
               <Section title={text.weeklyPaceTitle} hint={text.weeklyPaceHint}>
                 <WeeklyPace usage={usage} history={history} language={settings.language} />
+              </Section>
+            )}
+
+            {models && (
+              <Section title={text.modelsTitle} hint={text.modelsHint}>
+                <ModelUsage summary={models} language={settings.language} />
               </Section>
             )}
 
